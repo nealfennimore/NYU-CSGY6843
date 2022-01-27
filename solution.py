@@ -1,44 +1,44 @@
-from hashlib import md5
+# import socket module
+from socket import *
+# In order to terminate the program
+import sys
 
-### welcome_assignment_answers
-### Input - All eight questions given in the assignment.
-### Output - The right answer for the specific question.
-no = [
-    "Are encoding and encryption the same? - Yes/No",
-    "Is it possible to decrypt a message without a key? - Yes/No",
-    "Is a hashed message supposed to be un-hashed? - Yes/No",
-    "Is MD5 a secured hashing algorithm? - Yes/No",
-]
-yes = [
-    "Is it possible to decode a message without a key? - Yes/No",
-]
-secret = "In Slack, what is the secret passphrase posted in the #lab-python-getting-started channel posted by a TA?"
-md5hash = "What is the MD5 hashing value to the following message: 'NYU Computer Networking' - Use MD5 hash generator and use the answer in your code"
-dhcp = "What layer from the TCP/IP model the protocol DHCP belongs to? - The answer should be a numeric number"
-tcp = "What layer of the TCP/IP model the protocol TCP belongs to? - The answer should be a numeric number"
 
-def welcome_assignment_answers(question):
-    if question in no:
-        return 'No'
-    
-    if question in yes:
-        return 'Yes'
+def webServer(port=13331):
+  serverSocket = socket(AF_INET, SOCK_STREAM)
+  #Prepare a server socket
+  serverSocket.bind(("127.0.0.1", port))
+  serverSocket.listen()
 
-    if question == secret:
-        return 'mtls'
+  while True:
+    try:
+      print('Ready to serve...')
+      connectionSocket, addr = serverSocket.accept()
+      try:
+        message = connectionSocket.recv(1024)
+        filename = message.split()[1]
+        f = open(filename[1:])
+        outputdata = f.read()
 
-    if question == md5hash:
-        return md5('NYU Computer Networking'.encode('utf-8')).hexdigest()
+        #Send one HTTP header line into socket.
+        connectionSocket.send("HTTP/1.1 200 OK\r\n".encode())
 
-    if question == dhcp:
-        return 5
-    
-    if question == tcp:
-        return 4
+        #Send the content of the requested file to the client
+        for i in range(0, len(outputdata)):
+          connectionSocket.send(outputdata[i].encode())
+
+        connectionSocket.send("\r\n".encode())
+        connectionSocket.close()
+      except IOError:
+        connectionSocket.send("HTTP/1.1 404 Not Found\r\n".encode())
+        connectionSocket.send("\r\n".encode())
+        connectionSocket.close()
+
+    except (ConnectionResetError, BrokenPipeError):
+      pass
+    finally:
+      serverSocket.close()
+      sys.exit()  # Terminate the program after sending the corresponding data
 
 if __name__ == "__main__":
-    #use this space to debug and verify that the program works
-    debug_question = "Are encoding and encryption the same? - Yes/No"
-    print(welcome_assignment_answers(debug_question))
-
-###Questions:
+  webServer(13331)
