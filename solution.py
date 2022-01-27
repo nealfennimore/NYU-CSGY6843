@@ -31,10 +31,10 @@ def welcome_assignment_answers(question):
         return md5('NYU Computer Networking'.encode('utf-8')).hexdigest()
 
     if question == dhcp:
-        return 1
+        return 5
     
     if question == tcp:
-        return 3
+        return 4
 
 if __name__ == "__main__":
     #use this space to debug and verify that the program works
